@@ -1,0 +1,210 @@
+terminal STRING, IDENT;
+terminal NUM;
+terminal PLUS, MINUS, MULT, MOD, DIV;
+terminal READINT, READSTR;
+terminal LPAREN, RPAREN, COMMA;
+terminal LENGTH, POSITION;
+terminal CONCATENATE, SUBSTRING;
+terminal EQ, LT, LTEQ, GT, GTEQ, NOTEQ;
+terminal EQEQ, NOTEQEQ;
+terminal OR, AND, NOT;
+terminal TRUE, FALSE;
+terminal BEGIN, END;
+terminal BREAK, CONTINUE, EXIT;
+terminal ASSIGN;
+terminal IF, ELSE, THEN;
+terminal FOR, TO, DO;
+terminal PRINT;
+terminal SEMICOLON;
+
+nonterminal num_rel;
+nonterminal str_rel;
+
+nonterminal f_bool_expr_str_rel, f_bool_expr_num_rel;
+nonterminal f_bool_expr;
+nonterminal t_bool_expr;
+nonterminal bool_expr;
+
+nonterminal str_expr;
+nonterminal str_expr_concatenate, str_expr_substring;
+
+nonterminal f_num_expr_position;
+nonterminal f_num_expr;
+nonterminal t_num_expr_mult, t_num_expr_div, t_num_expr_mod;
+nonterminal t_num_expr;
+nonterminal num_expr_plus, num_expr_minus;
+nonterminal num_expr;
+
+nonterminal output_stat;
+nonterminal for_stat, for_stat_then;
+nonterminal if_stat, if_stat_then;
+nonterminal assign_stat;
+nonterminal simple_instr;
+nonterminal then_simple_instr;
+nonterminal instr;
+nonterminal epsilon;
+nonterminal program;
+
+precedence left PLUS, MINUS;
+precedence left MULT, DIV, MOD;
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+
+// program jako taki
+program ::= instr;
+
+// ciąg instrukcji
+instr ::= instr:i simple_instr:s SEMICOLON
+        | epsilon;
+
+epsilon ::= ;
+
+// podstawowe konstrukcje
+simple_instr ::= assign_stat
+       | if_stat
+       | for_stat
+       | BEGIN instr END
+       | output_stat
+       | BREAK
+       | CONTINUE
+       | EXIT;
+
+then_simple_instr ::= assign_stat
+                    | if_stat_then
+                    | for_stat_then
+                    | BEGIN instr END
+                    | output_stat
+                    | BREAK
+                    | CONTINUE
+                    | EXIT;
+
+// przypisanie
+assign_stat ::= IDENT ASSIGN num_expr
+              | IDENT ASSIGN str_expr
+              | IDENT ASSIGN IDENT;
+
+// konstrukcja warunkowa
+if_stat ::= IF bool_expr THEN simple_instr
+          | IF bool_expr THEN then_simple_instr ELSE simple_instr;
+
+if_stat_then ::= IF bool_expr THEN then_simple_instr ELSE then_simple_instr;
+
+// pętla for
+for_stat ::= FOR IDENT ASSIGN num_expr TO num_expr DO simple_instr
+           | FOR IDENT ASSIGN IDENT TO num_expr DO simple_instr
+           | FOR IDENT ASSIGN num_expr TO IDENT DO simple_instr
+           | FOR IDENT ASSIGN IDENT TO IDENT DO simple_instr;
+
+for_stat_then ::= FOR IDENT ASSIGN num_expr TO num_expr DO then_simple_instr
+                | FOR IDENT ASSIGN IDENT TO num_expr DO then_simple_instr
+                | FOR IDENT ASSIGN num_expr TO IDENT DO then_simple_instr
+                | FOR IDENT ASSIGN IDENT TO IDENT DO then_simple_instr;
+
+// wypisanie informacji na ekran
+output_stat ::= PRINT LPAREN num_expr RPAREN
+              | PRINT LPAREN str_expr RPAREN
+              | PRINT LPAREN IDENT RPAREN;
+
+// wyrażenia numeryczne, którego wartością jest liczba
+num_expr ::= num_expr_plus
+           | num_expr_minus
+           | t_num_expr;
+
+num_expr_plus ::= num_expr PLUS t_num_expr
+                | IDENT PLUS t_num_expr
+                | num_expr PLUS IDENT
+                | IDENT PLUS IDENT;
+
+num_expr_minus ::= num_expr MINUS t_num_expr
+                 | IDENT MINUS t_num_expr
+                 | num_expr MINUS IDENT
+                 | IDENT MINUS IDENT;
+
+t_num_expr ::= t_num_expr_mult
+             | t_num_expr_div
+             | t_num_expr_mod
+             | f_num_expr;
+
+t_num_expr_mult ::= t_num_expr MULT f_num_expr
+                  | IDENT MULT f_num_expr
+                  | t_num_expr MULT IDENT
+                  | IDENT MULT IDENT;
+
+t_num_expr_div ::= t_num_expr DIV f_num_expr
+                 | IDENT DIV f_num_expr
+                 | t_num_expr DIV IDENT
+                 | IDENT DIV IDENT;
+
+t_num_expr_mod ::= t_num_expr MOD f_num_expr
+                 | IDENT MOD f_num_expr
+                 | t_num_expr MOD IDENT
+                 | IDENT MOD IDENT;
+
+f_num_expr ::= NUM
+             | MINUS num_expr
+             | MINUS IDENT
+             | LPAREN num_expr RPAREN
+             | LPAREN IDENT RPAREN
+             | LENGTH LPAREN str_expr RPAREN
+             | LENGTH LPAREN IDENT RPAREN
+             | f_num_expr_position;
+
+f_num_expr_position ::= POSITION LPAREN str_expr COMMA str_expr RPAREN
+                      | POSITION LPAREN IDENT COMMA str_expr RPAREN
+                      | POSITION LPAREN str_expr COMMA IDENT RPAREN
+                      | POSITION LPAREN IDENT COMMA IDENT RPAREN;
+
+// wyrażenia, którego wartością jest łańcuch
+str_expr ::= STRING
+           | READSTR
+           | str_expr_concatenate
+           | str_expr_substring;
+
+str_expr_concatenate ::= CONCATENATE LPAREN str_expr COMMA str_expr RPAREN
+                       | CONCATENATE LPAREN IDENT COMMA str_expr RPAREN
+                       | CONCATENATE LPAREN str_expr COMMA IDENT RPAREN
+                       | CONCATENATE LPAREN IDENT COMMA IDENT RPAREN;
+
+str_expr_substring ::= SUBSTRING LPAREN str_expr COMMA num_expr COMMA num_expr RPAREN
+                     | SUBSTRING LPAREN str_expr COMMA num_expr COMMA IDENT RPAREN
+                     | SUBSTRING LPAREN str_expr COMMA IDENT COMMA num_expr RPAREN
+                     | SUBSTRING LPAREN str_expr COMMA IDENT COMMA IDENT RPAREN
+                     | SUBSTRING LPAREN IDENT COMMA num_expr COMMA num_expr RPAREN
+                     | SUBSTRING LPAREN IDENT COMMA IDENT COMMA num_expr RPAREN
+                     | SUBSTRING LPAREN IDENT COMMA num_expr COMMA IDENT RPAREN
+                     | SUBSTRING LPAREN IDENT COMMA IDENT COMMA IDENT RPAREN;
+
+// relacje logiczne
+num_rel ::= EQ
+          | LT
+          | LTEQ
+          | GT
+          | GTEQ
+          | NOTEQ;
+
+str_rel ::= EQEQ
+          | NOTEQEQ;
+
+bool_expr ::= bool_expr OR t_bool_expr
+            | t_bool_expr;
+
+t_bool_expr ::= t_bool_expr AND f_bool_expr
+              | f_bool_expr;
+
+f_bool_expr ::= TRUE
+              | FALSE
+              | LPAREN bool_expr RPAREN
+              | NOT bool_expr
+              | f_bool_expr_num_rel
+              | f_bool_expr_str_rel;
+
+f_bool_expr_num_rel ::= num_expr num_rel num_expr
+                      | IDENT num_rel num_expr
+                      | num_expr num_rel IDENT
+                      | IDENT num_rel IDENT;
+
+f_bool_expr_str_rel ::= str_expr str_rel str_expr
+                      | IDENT str_rel str_expr
+                      | str_expr str_rel IDENT
+                      | IDENT str_rel IDENT;

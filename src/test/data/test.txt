@@ -1,0 +1,23 @@
+if true
+then
+begin
+  print(1);
+  print(2);
+end
+else
+for a := 1 to 5 do
+begin
+  print("abc");
+  if (a <> 2)
+  then
+    break;
+
+  if (a < 2)
+  then
+    continue;
+end;
+
+print(readstr);
+print(readint);
+print(concatenate("abc", "def"));
+print(substring("abcdef", 1, 5));
